@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request) {
       );
     }
 
-    // Calcular el total en el servidor para evitar manipulación de precios desde el cliente
+    // Calcular el total en el servidor
     const subtotal = items.reduce(
       (acc, item) => acc + Number(item.price) * Number(item.quantity),
       0
@@ -32,7 +33,54 @@ export async function POST(request) {
     // Generar identificador único de orden de compra
     const orderId = `AURA-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Simulación de respuesta de pasarela de pago (Mercado Pago / Gateway)
+    // Guardar el pedido y descontar stock en Supabase
+    try {
+      const supabase = await createClient();
+
+      // 1. Insertar en la tabla "pedidos"
+      const { error: insertError } = await supabase.from("pedidos").insert({
+        order_id: orderId,
+        client_name: customer.name,
+        client_email: customer.email,
+        client_phone: customer.phone || "",
+        client_address: `${customer.address}, ${customer.city || "Buenos Aires"}`,
+        total: total,
+        payment_method: paymentMethod || "mercadopago",
+        status: "approved",
+        items: items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          brand: i.brand,
+          price: i.price,
+          quantity: i.quantity
+        }))
+      });
+
+      if (insertError) {
+        console.warn("Aviso al registrar pedido en Supabase:", insertError.message);
+      } else {
+        // 2. Descontar el stock en la tabla "perfumes"
+        for (const item of items) {
+          const { data: prod } = await supabase
+            .from("perfumes")
+            .select("stock")
+            .eq("id", item.id)
+            .single();
+
+          if (prod && typeof prod.stock === "number") {
+            const newStock = Math.max(0, prod.stock - item.quantity);
+            await supabase
+              .from("perfumes")
+              .update({ stock: newStock })
+              .eq("id", item.id);
+          }
+        }
+      }
+    } catch (dbErr) {
+      console.error("Error al interactuar con Supabase:", dbErr);
+    }
+
+    // Respuesta de la transacción
     const paymentResponse = {
       success: true,
       orderId,

@@ -10,6 +10,7 @@ export default function ProductCard({ perfume }) {
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = () => {
+    if (perfume.stock !== undefined && perfume.stock <= 0) return;
     addToCart(perfume, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
@@ -20,6 +21,8 @@ export default function ProductCard({ perfume }) {
     Mujer: "bg-rose-50 text-rose-700 border-rose-200",
     Unisex: "bg-amber-50 text-amber-800 border-amber-200"
   }[perfume.gender] || "bg-neutral-100 text-neutral-800 border-neutral-200";
+
+  const isOutOfStock = perfume.stock !== undefined && perfume.stock <= 0;
 
   return (
     <article className="group relative flex flex-col bg-white rounded-2xl border border-neutral-200/80 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -58,7 +61,7 @@ export default function ProductCard({ perfume }) {
           </span>
           <div className="flex items-center gap-1 text-amber-600 font-medium">
             <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-            <span>{perfume.rating.toFixed(1)}</span>
+            <span>{perfume.rating ? Number(perfume.rating).toFixed(1) : "5.0"}</span>
           </div>
         </div>
 
@@ -77,9 +80,24 @@ export default function ProductCard({ perfume }) {
         {/* Precios y botón de compra */}
         <div className="mt-auto pt-3 border-t border-neutral-100 flex items-center justify-between">
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-neutral-400 block">
-              Precio contado
-            </span>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[10px] uppercase tracking-wider text-neutral-400">
+                Precio
+              </span>
+              {perfume.stock !== undefined && (
+                <span
+                  className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
+                    isOutOfStock
+                      ? "bg-rose-100 text-rose-700"
+                      : perfume.stock <= 5
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-emerald-50 text-emerald-700"
+                  }`}
+                >
+                  {isOutOfStock ? "Agotado" : `Stock: ${perfume.stock}`}
+                </span>
+              )}
+            </div>
             <span className="text-lg font-extrabold text-neutral-900 font-sans">
               {formatPrice(perfume.price)}
             </span>
@@ -87,14 +105,19 @@ export default function ProductCard({ perfume }) {
 
           <button
             onClick={handleAddToCart}
+            disabled={isOutOfStock}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all duration-200 active:scale-95 shadow-xs cursor-pointer ${
-              added
+              isOutOfStock
+                ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                : added
                 ? "bg-emerald-600 text-white hover:bg-emerald-700"
                 : "bg-neutral-900 text-white hover:bg-amber-600 hover:shadow-md"
             }`}
             aria-label={`Añadir ${perfume.name} a la bolsa`}
           >
-            {added ? (
+            {isOutOfStock ? (
+              <span>Sin stock</span>
+            ) : added ? (
               <>
                 <Check className="w-4 h-4" />
                 <span>Agregado</span>

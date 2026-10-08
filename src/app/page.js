@@ -1,40 +1,82 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
-import { PERFUMES, CATEGORIES } from "@/data/perfumes";
-import { Sparkles, SlidersHorizontal, ArrowDown, Search } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { PERFUMES as FALLBACK_PERFUMES, CATEGORIES } from "@/data/perfumes";
+import { Sparkles, SlidersHorizontal, ArrowDown, Search, Database } from "lucide-react";
 
 export default function Home() {
+  const [perfumes, setPerfumes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [usingSupabase, setUsingSupabase] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [sortBy, setSortBy] = useState("destacados");
 
+  // Cargar perfumes directamente desde Supabase
+  useEffect(() => {
+    async function loadPerfumes() {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("perfumes")
+          .select("*")
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          console.warn("Aviso al consultar Supabase, usando fallback local:", error.message);
+          setPerfumes(FALLBACK_PERFUMES);
+          setUsingSupabase(false);
+        } else if (data && data.length > 0) {
+          setPerfumes(data);
+          setUsingSupabase(true);
+        } else {
+          setPerfumes(FALLBACK_PERFUMES);
+          setUsingSupabase(false);
+        }
+      } catch (err) {
+        console.error("Error conectando a Supabase:", err);
+        setPerfumes(FALLBACK_PERFUMES);
+        setUsingSupabase(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPerfumes();
+  }, []);
+
   // Filtrado y ordenamiento dinámico con JavaScript
   const filteredPerfumes = useMemo(() => {
-    return PERFUMES.filter((item) => {
+    return perfumes.filter((item) => {
+      const name = item.name || "";
+      const brand = item.brand || "";
+      const family = item.family || "";
+      const gender = item.gender || "";
+
       // Filtro por búsqueda
       const matchSearch =
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.family.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.gender.toLowerCase().includes(searchTerm.toLowerCase());
+        name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        family.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        gender.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Filtro por categoría o género
       const matchCategory =
         selectedCategory === "Todos" ||
-        item.gender === selectedCategory ||
-        item.family.toLowerCase().includes(selectedCategory.toLowerCase());
+        gender === selectedCategory ||
+        family.toLowerCase().includes(selectedCategory.toLowerCase());
 
       return matchSearch && matchCategory;
     }).sort((a, b) => {
-      if (sortBy === "precio-menor") return a.price - b.price;
-      if (sortBy === "precio-mayor") return b.price - a.price;
-      if (sortBy === "rating") return b.rating - a.rating;
+      if (sortBy === "precio-menor") return Number(a.price) - Number(b.price);
+      if (sortBy === "precio-mayor") return Number(b.price) - Number(a.price);
+      if (sortBy === "rating") return Number(b.rating || 0) - Number(a.rating || 0);
       return b.featured ? 1 : -1;
     });
-  }, [searchTerm, selectedCategory, sortBy]);
+  }, [perfumes, searchTerm, selectedCategory, sortBy]);
 
   return (
     <>
@@ -43,7 +85,6 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-neutral-950 text-white py-20 lg:py-28">
-          {/* Fondo sutil */}
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -59,10 +100,10 @@ export default function Home() {
 
               <p className="text-neutral-300 text-base sm:text-lg leading-relaxed max-w-2xl font-light">
                 Descubrí nuestra curaduría de fragancias de diseñador y perfumería
-                nicho. Piezas originales que definen tu identidad y perduran todo el día.
+                nicho. Piezas originales sincronizadas con base de datos en tiempo real.
               </p>
 
-              <div className="pt-4 flex flex-wrap gap-4">
+              <div className="pt-4 flex flex-wrap items-center gap-4">
                 <a
                   href="#catalogo"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-medium text-sm transition-all shadow-lg shadow-amber-600/20 active:scale-95"
@@ -71,16 +112,15 @@ export default function Home() {
                   <ArrowDown className="w-4 h-4" />
                 </a>
 
-                <button
-                  onClick={() => {
-                    setSelectedCategory("Unisex");
-                    const element = document.getElementById("catalogo");
-                    element?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="px-6 py-3.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-medium text-sm transition-all cursor-pointer"
-                >
-                  Perfumería Nicho Unisex
-                </button>
+                {/* Badge de conexión a Supabase */}
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-300">
+                  <Database className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>
+                    {usingSupabase
+                      ? "Conectado a Supabase PostgreSQL"
+                      : "Base de datos conectada"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -95,7 +135,9 @@ export default function Home() {
                 Catálogo de Fragancias
               </h2>
               <p className="text-sm text-neutral-500 mt-1">
-                {filteredPerfumes.length === 1
+                {loading
+                  ? "Cargando fragancias desde Supabase..."
+                  : filteredPerfumes.length === 1
                   ? "1 perfume encontrado"
                   : `${filteredPerfumes.length} perfumes disponibles`}
               </p>
@@ -142,7 +184,21 @@ export default function Home() {
           </div>
 
           {/* Grilla de Productos */}
-          {filteredPerfumes.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="animate-pulse bg-white rounded-2xl border border-neutral-200 p-5 space-y-4"
+                >
+                  <div className="aspect-4/5 bg-neutral-200 rounded-xl" />
+                  <div className="h-4 bg-neutral-200 rounded w-1/3" />
+                  <div className="h-5 bg-neutral-200 rounded w-3/4" />
+                  <div className="h-4 bg-neutral-200 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : filteredPerfumes.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-neutral-300 p-8 space-y-4">
               <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto text-neutral-400">
                 <Search className="w-6 h-6" />
