@@ -4,66 +4,80 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { Sparkles, Shield, User, ArrowLeft, LogIn, AlertCircle } from "lucide-react";
+import { Sparkles, ArrowLeft, LogIn, UserPlus, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
+    setSuccessMsg("");
+
+    const supabase = createClient();
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      if (isRegistering) {
+        // Registro de nuevo usuario (siempre rol cliente por seguridad)
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              nombre: nombre || "Cliente",
+              rol: "cliente"
+            }
+          }
+        });
 
-      if (error) {
-        throw new Error(error.message);
-      }
+        if (error) throw new Error(error.message);
 
-      // Consultar el rol del usuario en la tabla perfiles
-      if (data?.user) {
-        const { data: perfil } = await supabase
-          .from("perfiles")
-          .select("rol, nombre")
-          .eq("id", data.user.id)
-          .single();
+        setSuccessMsg("¡Cuenta creada con éxito! Ya podés iniciar sesión.");
+        setIsRegistering(false);
+        setPassword("");
+      } else {
+        // Inicio de sesión normal
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-        if (perfil?.rol === "admin") {
-          router.push("/admin");
-        } else {
-          router.push("/");
+        if (error) throw new Error(error.message);
+
+        if (data?.user) {
+          // Consultar el rol en la base de datos
+          const { data: perfil } = await supabase
+            .from("perfiles")
+            .select("rol, nombre")
+            .eq("id", data.user.id)
+            .single();
+
+          if (perfil?.rol === "admin") {
+            router.push("/admin");
+          } else {
+            router.push("/");
+          }
         }
       }
     } catch (err) {
       setErrorMsg(
         err.message.includes("Invalid login")
-          ? "Email o contraseña incorrectos. Verificá los datos ingresados."
+          ? "Correo o contraseña incorrectos."
+          : err.message.includes("User already registered")
+          ? "Este correo ya está registrado. Probá iniciar sesión."
           : err.message
       );
     } finally {
       setLoading(false);
     }
-  };
-
-  // Ayudante para autocompletar credenciales en la demo
-  const fillCredentials = (type) => {
-    if (type === "admin") {
-      setEmail("ctojo@itba.edu.ar");
-      setPassword("admin123456");
-    } else {
-      setEmail("cliente@gmail.com");
-      setPassword("cliente123");
-    }
-    setErrorMsg("");
   };
 
   return (
@@ -89,40 +103,46 @@ export default function LoginPage() {
             <Sparkles className="w-6 h-6" />
           </div>
           <h2 className="font-serif text-3xl font-bold tracking-tight text-white">
-            AURA Access
+            AURA
           </h2>
           <p className="text-xs uppercase tracking-widest text-neutral-400">
-            Autenticación con Supabase Auth & Roles
+            {isRegistering ? "Crear una nueva cuenta" : "Iniciar Sesión en tu cuenta"}
           </p>
         </div>
 
         <div className="mt-8 bg-neutral-900/90 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6">
-          {/* Botones de prueba rápida para la entrega de la facultad */}
-          <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 space-y-2.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">
-              Cuentas demo para la facultad:
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => fillCredentials("admin")}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-300 hover:bg-amber-600/30 transition-all font-medium text-center"
-              >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Rol Administrador</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials("cliente")}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700 transition-all font-medium text-center"
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Rol Cliente</span>
-              </button>
+          {/* Mensajes de error o éxito */}
+          {errorMsg && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{errorMsg}</span>
             </div>
-          </div>
+          )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          {successMsg && (
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+            {isRegistering && (
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                  Nombre Completo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="ej: Santiago López"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-semibold text-neutral-300 mb-1">
                 Correo Electrónico
@@ -132,7 +152,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ej: ctojo@itba.edu.ar"
+                placeholder="tu@email.com"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
             </div>
@@ -151,20 +171,18 @@ export default function LoginPage() {
               />
             </div>
 
-            {errorMsg && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={loading}
               className="w-full py-3.5 px-4 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white rounded-xl font-semibold text-xs uppercase tracking-wider transition-all duration-200 shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
-                <span>Validando credenciales...</span>
+                <span>Procesando...</span>
+              ) : isRegistering ? (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  <span>Crear Cuenta</span>
+                </>
               ) : (
                 <>
                   <LogIn className="w-4 h-4" />
@@ -173,6 +191,23 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Toggle entre Iniciar Sesión y Registrarse */}
+          <div className="pt-2 border-t border-neutral-800 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className="text-xs text-neutral-400 hover:text-amber-400 transition-colors font-medium cursor-pointer"
+            >
+              {isRegistering
+                ? "¿Ya tenés una cuenta? Iniciar Sesión"
+                : "¿No tenés cuenta? Registrate como cliente"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
