@@ -1,11 +1,60 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Search, Sparkles } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { ShoppingBag, Search, Sparkles, User, Shield, LogOut } from "lucide-react";
 
 export default function Navbar({ onSearchChange, searchTerm }) {
   const { totalItems, setIsCartOpen, isHydrated } = useCart();
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Consultar sesión actual
+    async function checkUser() {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: perfil } = await supabase
+          .from("perfiles")
+          .select("rol, nombre, email")
+          .eq("id", user.id)
+          .single();
+
+        setUserProfile(perfil || { rol: "cliente", email: user.email });
+      } else {
+        setUserProfile(null);
+      }
+    }
+
+    checkUser();
+
+    // Escuchar cambios de sesión (login / logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          checkUser();
+        } else {
+          setUserProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUserProfile(null);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/85 border-b border-neutral-200">
@@ -41,15 +90,53 @@ export default function Navbar({ onSearchChange, searchTerm }) {
             </div>
           </div>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-4">
+          {/* Right Actions */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Estado de Usuario / Auth */}
+            {userProfile ? (
+              <div className="flex items-center gap-2">
+                {userProfile.rol === "admin" ? (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 hover:bg-amber-500/20 text-xs font-semibold tracking-wider transition-colors"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Panel Admin</span>
+                  </Link>
+                ) : (
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-medium">
+                    <User className="w-3.5 h-3.5" />
+                    <span>{userProfile.nombre || "Cliente"}</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-neutral-400 hover:text-rose-600 transition-colors"
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-900 text-white hover:bg-amber-600 text-xs font-semibold tracking-wider transition-colors shadow-2xs"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Ingresar</span>
+              </Link>
+            )}
+
+            {/* Botón Carrito */}
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2.5 rounded-full hover:bg-neutral-100 transition-colors text-neutral-800 flex items-center gap-2 group cursor-pointer"
               aria-label="Abrir carrito de compras"
             >
               <div className="relative">
-                <ShoppingBag className="w-6 h-6 group-hover:scale-105 transition-transform" />
+                <ShoppingBag className="w-5 h-5 group-hover:scale-105 transition-transform" />
                 {isHydrated && totalItems > 0 && (
                   <span className="absolute -top-1.5 -right-2 bg-amber-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-scale-in">
                     {totalItems}
