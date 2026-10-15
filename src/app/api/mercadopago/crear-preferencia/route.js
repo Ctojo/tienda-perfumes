@@ -79,10 +79,14 @@ export async function POST(request) {
         failure: `${origin}/resultado-pago`,
         pending: `${origin}/resultado-pago`
       },
-      auto_return: "approved",
       external_reference: orderId || `AURA-${Date.now()}`,
       statement_descriptor: "AURA PARFUMS"
     };
+
+    // Mercado Pago solo permite auto_return en URLs HTTPS públicas
+    if (origin.startsWith("https://")) {
+      preferenceBody.auto_return = "approved";
+    }
 
     const response = await preference.create({ body: preferenceBody });
 

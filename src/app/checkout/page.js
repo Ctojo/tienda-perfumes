@@ -90,11 +90,11 @@ export default function CheckoutPage() {
           window.location.href = mpData.sandbox_init_point || mpData.init_point;
           return;
         } else {
-          console.warn("Aviso Mercado Pago:", mpData.error);
+          throw new Error(mpData.error || "No se pudo conectar con Mercado Pago");
         }
       }
 
-      // Para otros métodos o confirmación inmediata
+      // Para otros métodos (transferencia / tarjeta directa)
       setOrderCompleted(data);
       clearCart();
     } catch (err) {

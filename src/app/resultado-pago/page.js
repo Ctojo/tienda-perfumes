@@ -216,3 +216,4 @@ export default function ResultadoPagoPage() {
     </Suspense>
   );
 }
+
