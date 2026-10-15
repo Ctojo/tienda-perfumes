@@ -46,18 +46,21 @@ export default function CheckoutPage() {
     setErrorMsg("");
 
     try {
+      const customerData = {
+        name: `${formData.name} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city
+      };
+
+      // 1. Guardar la orden en Supabase
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: cart,
-          customer: {
-            name: `${formData.name} ${formData.lastName}`,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address,
-            city: formData.city
-          },
+          customer: customerData,
           paymentMethod
         })
       });
@@ -65,10 +68,33 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "No se pudo procesar el pago");
+        throw new Error(data.error || "No se pudo registrar la orden");
       }
 
-      // Éxito: Guardar datos de confirmación y vaciar el carrito
+      // 2. Si eligió Mercado Pago, crear la Preferencia oficial y redirigir a Checkout Pro
+      if (paymentMethod === "mercadopago") {
+        const mpResponse = await fetch("/api/mercadopago/crear-preferencia", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart,
+            customer: customerData,
+            orderId: data.orderId
+          })
+        });
+
+        const mpData = await mpResponse.json();
+
+        if (mpData.init_point || mpData.sandbox_init_point) {
+          // Redirección oficial al Checkout de Mercado Pago
+          window.location.href = mpData.sandbox_init_point || mpData.init_point;
+          return;
+        } else {
+          console.warn("Aviso Mercado Pago:", mpData.error);
+        }
+      }
+
+      // Para otros métodos o confirmación inmediata
       setOrderCompleted(data);
       clearCart();
     } catch (err) {
