@@ -64,16 +64,6 @@ export async function POST(request) {
     // Crear la preferencia oficial con URLs de retorno
     const preferenceBody = {
       items: mpItems,
-      payer: {
-        name: customer?.name || "Cliente",
-        email: customer?.email || "cliente@aura.com",
-        phone: {
-          number: customer?.phone ? String(customer.phone) : "1123456789"
-        },
-        address: {
-          street_name: customer?.address || "Dirección de entrega"
-        }
-      },
       back_urls: {
         success: `${origin}/resultado-pago`,
         failure: `${origin}/resultado-pago`,

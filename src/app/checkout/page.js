@@ -86,15 +86,15 @@ export default function CheckoutPage() {
         const mpData = await mpResponse.json();
 
         if (mpData.init_point || mpData.sandbox_init_point) {
-          // Redirección oficial al Checkout de Mercado Pago
-          window.location.href = mpData.sandbox_init_point || mpData.init_point;
+          // Redirección oficial al Checkout de Mercado Pago (init_point oficial y estable)
+          window.location.href = mpData.init_point || mpData.sandbox_init_point;
           return;
         } else {
-          throw new Error(mpData.error || "No se pudo conectar con Mercado Pago");
+          console.warn("Aviso Mercado Pago:", mpData.error);
         }
       }
 
-      // Para otros métodos (transferencia / tarjeta directa)
+      // Para otros métodos o confirmación inmediata
       setOrderCompleted(data);
       clearCart();
     } catch (err) {
