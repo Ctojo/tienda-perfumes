@@ -73,9 +73,10 @@ export async function POST(request) {
       statement_descriptor: "AURA PARFUMS"
     };
 
-    // Mercado Pago solo permite auto_return en URLs HTTPS públicas
+    // Mercado Pago solo permite auto_return y notification_url en URLs HTTPS públicas
     if (origin.startsWith("https://")) {
       preferenceBody.auto_return = "approved";
+      preferenceBody.notification_url = `${origin}/api/webhooks/mercadopago`;
     }
 
     const response = await preference.create({ body: preferenceBody });
