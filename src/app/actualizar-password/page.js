@@ -19,20 +19,18 @@ function ActualizarPasswordForm() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const code = searchParams?.get("code");
+
+    // 1. Si la URL trae un código PKCE, redirigir al handler del servidor para establecer las cookies
+    if (code) {
+      window.location.href = `/auth/callback?code=${encodeURIComponent(code)}&next=/actualizar-password`;
+      return;
+    }
+
     const supabase = createClient();
 
-    async function initSession() {
-      // 1. Si viene con código PKCE en la URL, intercambiarlo por sesión
-      const code = searchParams?.get("code");
-      if (code) {
-        try {
-          await supabase.auth.exchangeCodeForSession(code);
-        } catch (e) {
-          console.warn("Aviso al intercambiar código:", e);
-        }
-      }
-
-      // 2. Comprobar si hay sesión activa (por link de recuperación o login previo)
+    async function checkSession() {
+      // 2. Comprobar si hay sesión activa (establecida por /auth/callback o login previo)
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsAuthenticated(true);
@@ -41,9 +39,9 @@ function ActualizarPasswordForm() {
       setSessionChecked(true);
     }
 
-    initSession();
+    checkSession();
 
-    // 3. Escuchar evento de recuperación de contraseña
+    // 3. Escuchar evento de sesión o recuperación
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "PASSWORD_RECOVERY" || session) {
@@ -108,6 +106,8 @@ function ActualizarPasswordForm() {
       setErrorMsg(
         err.message.includes("same_password")
           ? "La nueva contraseña debe ser diferente a la anterior."
+          : err.message.includes("Auth session missing")
+          ? "La sesión de seguridad expiró o el enlace ya fue usado. Por favor solicitá un nuevo enlace desde el Login."
           : err.message || "Error al actualizar la contraseña."
       );
     } finally {

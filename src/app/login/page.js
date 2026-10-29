@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { Sparkles, ArrowLeft, LogIn, UserPlus, AlertCircle, CheckCircle, Mail, KeyRound } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   // mode puede ser: "login" | "register" | "forgot"
   const [mode, setMode] = useState("login");
   const [nombre, setNombre] = useState("");
@@ -16,6 +18,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    if (searchParams?.get("error") === "enlace-expirado") {
+      setErrorMsg("El enlace de recuperación ya expiró o fue utilizado. Por favor solicitá uno nuevo.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,9 +53,9 @@ export default function LoginPage() {
         setMode("login");
         setPassword("");
       } else if (mode === "forgot") {
-        // Recuperación / cambio de contraseña por correo
+        // Recuperación / cambio de contraseña por correo (apunta al callback oficial)
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/actualizar-password`
+          redirectTo: `${window.location.origin}/auth/callback?next=/actualizar-password`
         });
 
         if (error) throw new Error(error.message);
@@ -273,5 +281,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-950" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
