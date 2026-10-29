@@ -17,7 +17,8 @@ import {
   Plus,
   Minus,
   CheckCircle2,
-  Lock
+  Lock,
+  KeyRound
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -192,6 +193,14 @@ export default function AdminPage() {
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Ver Tienda</span>
+              </Link>
+              <Link
+                href="/actualizar-password"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-medium border border-neutral-800 transition-colors"
+                title="Cambiar contraseña de administrador"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+                <span>Cambiar Contraseña</span>
               </Link>
               <button
                 onClick={handleLogout}
