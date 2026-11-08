@@ -20,6 +20,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_0WXHN-SqD6SB7NMz7r_jAA_BdXLykzR' }}
       MP_ACCESS_TOKEN: ${{ secrets.MP_ACCESS_TOKEN || 'APP_USR-5638914257499531-101512-e787f0e55c92eae965fe0b6599fe150d-3764948817' }}
       MERCADO_PAGO_ACCESS_TOKEN: ${{ secrets.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-5638914257499531-101512-e787f0e55c92eae965fe0b6599fe150d-3764948817' }}
+      NEXT_TELEMETRY_DISABLED: 1
       CI: true
 
     steps:
@@ -28,15 +29,15 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. Configurar el motor de ejecución Node.js con caché de dependencias (Slide 14 y 15)
-      - name: Configurar Entorno de Node.js (v20 LTS)
+      - name: Configurar Entorno de Node.js (v22)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
 
       # 3. Instalación limpia y determinística desde package-lock.json (Slide 15)
       - name: Instalar Dependencias (Clean Install)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       # 4. Instalar Chromium y dependencias del sistema para Playwright en Ubuntu (Slide 14)
       - name: Instalar Navegador Chromium para Playwright
