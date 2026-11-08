@@ -1,0 +1,60 @@
+name: CI/CD Pipeline - Calidad y Despliegue Continuo (AURA)
+
+# Disparadores del Workflow (Clase 13 - Slide 13 y 14)
+# Se activa ante cada push o pull request sobre la rama principal (main)
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Integración Continua (Lint, Tests E2E y Build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Inyección segura de variables de entorno para compilación y tests (Slide 5, 6 y 16)
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://msgjblxzmyndrwbgenrt.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_0WXHN-SqD6SB7NMz7r_jAA_BdXLykzR' }}
+      MP_ACCESS_TOKEN: ${{ secrets.MP_ACCESS_TOKEN || 'APP_USR-5638914257499531-101512-e787f0e55c92eae965fe0b6599fe150d-3764948817' }}
+      MERCADO_PAGO_ACCESS_TOKEN: ${{ secrets.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-5638914257499531-101512-e787f0e55c92eae965fe0b6599fe150d-3764948817' }}
+      CI: true
+
+    steps:
+      # 1. Descargar el código fuente del repositorio (Slide 14 y 15)
+      - name: Descargar Código del Repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar el motor de ejecución Node.js con caché de dependencias (Slide 14 y 15)
+      - name: Configurar Entorno de Node.js (v20 LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      # 3. Instalación limpia y determinística desde package-lock.json (Slide 15)
+      - name: Instalar Dependencias (Clean Install)
+        run: npm ci
+
+      # 4. Instalar Chromium y dependencias del sistema para Playwright en Ubuntu (Slide 14)
+      - name: Instalar Navegador Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      # 5. Compilación y optimización de producción de Next.js (Slide 4 y 15)
+      - name: Compilar Proyecto Next.js (Build Verification)
+        run: npm run build
+
+      # 6. Ejecución de la suite completa de pruebas E2E y API (Clase 12 / Slide 15)
+      - name: Ejecutar Pruebas Automatizadas con Playwright
+        run: npm test
+
+      # 7. Publicación de artefactos de prueba (HTML Report & Trace Viewer - Clase 12 Slide 16)
+      - name: Subir Reporte de Pruebas y Trazas
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
