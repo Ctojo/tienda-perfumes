@@ -1,27 +1,50 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createPedidoSchema, sanitizeString } from "@/lib/validations";
+import { handleApiError } from "@/lib/api-response";
 
+/**
+ * POST /api/checkout
+ *
+ * Endpoint de checkout que ahora implementa validación con esquemas Zod (Clase 10 - Slides 12 y 13)
+ * y manejo centralizado de errores manteniendo retrocompatibilidad completa con el frontend existente.
+ */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { items, customer, paymentMethod } = body;
+    const rawBody = await request.json().catch(() => null);
 
-    // Validación básica de seguridad en el servidor
-    if (!items || items.length === 0) {
+    if (!rawBody) {
       return NextResponse.json(
-        { error: "No hay productos en el carrito" },
+        { error: "Cuerpo de la petición vacío o JSON inválido" },
         { status: 400 }
       );
     }
 
-    if (!customer?.name || !customer?.email || !customer?.address) {
+    // 1. Validación estricta con esquema Zod (Slide 12 y 13)
+    const validation = createPedidoSchema.safeParse(rawBody);
+    if (!validation.success) {
+      const errorDetails = validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`);
       return NextResponse.json(
-        { error: "Faltan datos obligatorios de envío" },
+        {
+          error: "Datos obligatorios de envío o carrito inválidos",
+          details: errorDetails
+        },
         { status: 400 }
       );
     }
 
-    // Calcular el total en el servidor
+    const { items, customer, paymentMethod } = validation.data;
+
+    // 2. Sanitización de datos
+    const sanitizedCustomer = {
+      name: sanitizeString(customer.name),
+      email: customer.email.toLowerCase().trim(),
+      phone: sanitizeString(customer.phone || ""),
+      address: sanitizeString(customer.address),
+      city: sanitizeString(customer.city || "Buenos Aires")
+    };
+
+    // 3. Cálculo de costos en el servidor
     const subtotal = items.reduce(
       (acc, item) => acc + Number(item.price) * Number(item.quantity),
       0
@@ -33,24 +56,23 @@ export async function POST(request) {
     // Generar identificador único de orden de compra
     const orderId = `AURA-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Guardar el pedido y descontar stock en Supabase
+    // 4. Guardar pedido y descontar stock en Supabase
     try {
       const supabase = await createClient();
 
-      // 1. Insertar en la tabla "pedidos"
       const { error: insertError } = await supabase.from("pedidos").insert({
         order_id: orderId,
-        client_name: customer.name,
-        client_email: customer.email,
-        client_phone: customer.phone || "",
-        client_address: `${customer.address}, ${customer.city || "Buenos Aires"}`,
+        client_name: sanitizedCustomer.name,
+        client_email: sanitizedCustomer.email,
+        client_phone: sanitizedCustomer.phone,
+        client_address: `${sanitizedCustomer.address}, ${sanitizedCustomer.city}`,
         total: total,
         payment_method: paymentMethod || "mercadopago",
         status: "approved",
         items: items.map((i) => ({
           id: i.id,
-          name: i.name,
-          brand: i.brand,
+          name: sanitizeString(i.name),
+          brand: sanitizeString(i.brand || ""),
           price: i.price,
           quantity: i.quantity
         }))
@@ -59,7 +81,7 @@ export async function POST(request) {
       if (insertError) {
         console.warn("Aviso al registrar pedido en Supabase:", insertError.message);
       } else {
-        // 2. Descontar el stock en la tabla "perfumes"
+        // Descontar stock
         for (const item of items) {
           const { data: prod } = await supabase
             .from("perfumes")
@@ -80,7 +102,7 @@ export async function POST(request) {
       console.error("Error al interactuar con Supabase:", dbErr);
     }
 
-    // Respuesta de la transacción
+    // 5. Respuesta exitosa con código HTTP 201 Created
     const paymentResponse = {
       success: true,
       orderId,
@@ -94,21 +116,12 @@ export async function POST(request) {
         shippingCost,
         total
       },
-      customer: {
-        name: customer.name,
-        email: customer.email,
-        address: customer.address,
-        city: customer.city || "Buenos Aires"
-      },
+      customer: sanitizedCustomer,
       transactionId: `TX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
     };
 
-    return NextResponse.json(paymentResponse, { status: 200 });
+    return NextResponse.json(paymentResponse, { status: 201 });
   } catch (error) {
-    console.error("Error en /api/checkout:", error);
-    return NextResponse.json(
-      { error: "Error interno al procesar el pago" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Error interno al procesar el pago");
   }
 }

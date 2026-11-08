@@ -21,3 +21,4 @@ export async function GET(request) {
   // Si el código ya expiró o es inválido, volver al login
   return NextResponse.redirect(`${origin}/login?error=enlace-expirado`);
 }
+
