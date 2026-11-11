@@ -36,8 +36,9 @@ test.describe("Módulo 13 (Clase 12): Flujo de Compra y Carrito AURA", () => {
     const firstBuyButton = page.getByRole("button", { name: /a la bolsa|Comprar/i }).first();
     await firstBuyButton.click();
 
-    // 2. Clic en continuar compra
+    // 2. Esperar a que el CartDrawer esté abierto y hacer clic en continuar compra
     const checkoutLink = page.getByRole("link", { name: /Continuar compra y pagar/i });
+    await expect(checkoutLink).toBeVisible({ timeout: 10000 });
     await checkoutLink.click();
 
     // 3. Verificar que la URL cambió a /checkout y se visualiza el formulario de compra

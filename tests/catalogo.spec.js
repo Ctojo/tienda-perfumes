@@ -28,11 +28,11 @@ test.describe("Módulo 13 (Clase 12): Catálogo de Perfumes AURA", () => {
     const searchInput = page.getByPlaceholder("Buscar por fragancia, marca o notas...").first();
     await expect(searchInput).toBeVisible();
 
-    // Escribir "Sauvage" en el buscador
-    await searchInput.fill("Sauvage");
+    // Escribir "Urban Man" en el buscador
+    await searchInput.fill("Urban Man");
 
-    // Verificar que aparezca Sauvage Elixir
-    await expect(page.getByText("Sauvage Elixir").first()).toBeVisible();
+    // Verificar que aparezca Club de Nuit Urban Man Elixir
+    await expect(page.getByText("Urban Man").first()).toBeVisible();
 
     // Limpiar el buscador
     await searchInput.fill("");

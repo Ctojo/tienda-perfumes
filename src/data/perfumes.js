@@ -1,163 +1,171 @@
 export const PERFUMES = [
   {
-    id: "sauvage-elixir",
-    name: "Sauvage Elixir",
-    brand: "Dior",
+    id: "cdn-urban-man-elixir",
+    name: "Club de Nuit Urban Man Elixir",
+    brand: "Armaf",
     gender: "Hombre",
     family: "Amaderado Especiado",
-    price: 185000,
-    volume: "60 ml",
+    price: 68000,
+    volume: "105 ml",
     rating: 4.9,
-    reviewsCount: 128,
-    image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80",
-    description: "Una fragancia extraordinariamente concentrada, impregnada del frescor emblemático de Sauvage con un corazón de especias embriagador.",
+    reviewsCount: 112,
+    image: "/images/perfumes/urban-man-elixir.jpg",
+    description: "Una composición magnética y seductora que combina el frescor cítrico especiado con un fondo ahumado y ambarino intenso. Alta fijación y proyección extraordinaria.",
     notes: {
-      salida: "Canela, Nuez moscada, Cardamomo y Pomelo",
-      corazon: "Lavanda de Nyons",
-      fondo: "Regaliz, Sándalo, Ámbar, Pachulí y Vetiver de Haití"
+      salida: "Bergamota, Pimienta rosa, Flor de azahar y Jazmín",
+      corazon: "Lavanda, Geranio, Elemí, Azafrán y Vetiver",
+      fondo: "Ambroxan, Pachulí, Cedro, Ámbar y Ládano"
     },
     featured: true,
-    inStock: true
+    inStock: true,
+    stock: 8
   },
   {
-    id: "bleu-de-chanel",
-    name: "Bleu de Chanel Parfum",
-    brand: "Chanel",
+    id: "paradise-garden",
+    name: "Le Beau Paradise Garden",
+    brand: "Jean Paul Gaultier",
     gender: "Hombre",
-    family: "Amaderado Aromático",
-    price: 210000,
-    volume: "100 ml",
-    rating: 4.8,
-    reviewsCount: 95,
-    image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=800&q=80",
-    description: "El elogio de la libertad masculina en una fragancia aromática amaderada con una estela cautivadora y atemporal.",
-    notes: {
-      salida: "Corteza de limón, Bergamota, Menta y Artemisia",
-      corazon: "Lavanda, Geranio, Notas verdes y Piña",
-      fondo: "Sándalo de Nueva Caledonia, Cedro, Madera de ámbar e Iso E Super"
-    },
-    featured: true,
-    inStock: true
-  },
-  {
-    id: "baccarat-rouge-540",
-    name: "Baccarat Rouge 540",
-    brand: "Maison Francis Kurkdjian",
-    gender: "Unisex",
-    family: "Ámbar Floral",
-    price: 340000,
-    volume: "70 ml",
+    family: "Verde Acuático Tropical",
+    price: 160000,
+    volume: "125 ml",
     rating: 5.0,
-    reviewsCount: 210,
-    image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80",
-    description: "Luminosa y densa, transparente e intensa, Baccarat Rouge 540 acaricia la piel como un soplo ambarino floral y amaderado.",
+    reviewsCount: 89,
+    image: "/images/perfumes/paradise-garden.jpg",
+    description: "Fragancia de edición especial sellada en lata ornamental. Un edén olfativo acuático y tropical con una explosión de coco fresco, higo verde y maderas sensuales.",
     notes: {
-      salida: "Jazmín Grandiflorum de Egipto y Azafrán",
-      corazon: "Almendra amarga de Marruecos y Madera de cedro",
-      fondo: "Acorde amaderado almizclado y Ámbar gris"
+      salida: "Menta fresca, Jengibre picante y Acorde acuático",
+      corazon: "Coco cremoso, Higo verde y Sal marina",
+      fondo: "Sándalo cremoso, Haba tonka y Ámbar gris"
     },
     featured: true,
-    inStock: true
+    inStock: true,
+    stock: 5
   },
   {
-    id: "good-girl-blush",
-    name: "Good Girl Blush",
-    brand: "Carolina Herrera",
-    gender: "Mujer",
-    family: "Floral Vainilla",
-    price: 165000,
-    volume: "80 ml",
-    rating: 4.7,
-    reviewsCount: 74,
-    image: "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=800&q=80",
-    description: "Una explosión radiante de feminidad que reinventa el icónico tacón con una doble dosis de vainilla y el romance del peonía.",
-    notes: {
-      salida: "Bergamota italiana y Mandarina",
-      corazon: "Peonía exótica y Agua de rosas reciclada",
-      fondo: "Vainilla bourbon y Haba tonka"
-    },
-    featured: false,
-    inStock: true
-  },
-  {
-    id: "acqua-di-gio-profondo",
-    name: "Acqua Di Giò Profondo",
-    brand: "Giorgio Armani",
+    id: "vulcan-feu",
+    name: "Vulcan Feu",
+    brand: "French Avenue",
     gender: "Hombre",
-    family: "Acuático Aromático",
-    price: 172000,
+    family: "Amaderado Oriental",
+    price: 75000,
     volume: "100 ml",
     rating: 4.8,
-    reviewsCount: 88,
-    image: "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=800&q=80",
-    description: "Una inmersión profunda en la frescura del mar que despierta los sentidos con notas marinas e intensas esencias aromáticas.",
+    reviewsCount: 47,
+    image: "/images/perfumes/vulcan-feu.jpg",
+    description: "Presentación exclusiva con estética de serpiente dorada y azul. Una fragancia ardiente que evoca la fuerza de la tierra volcánica y las resinas nobles de Oriente.",
     notes: {
-      salida: "Notas marinas, Aquozone, Bergamota y Mandarina verde",
-      corazon: "Romero, Lavanda, Ciprés y Lentisco",
-      fondo: "Ámbar mineral, Pachulí y Almizcle"
-    },
-    featured: true,
-    inStock: true
-  },
-  {
-    id: "black-opium",
-    name: "Black Opium Le Parfum",
-    brand: "Yves Saint Laurent",
-    gender: "Mujer",
-    family: "Oriental Vainilla Gourmand",
-    price: 195000,
-    volume: "90 ml",
-    rating: 4.9,
-    reviewsCount: 160,
-    image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
-    description: "La intensidad más radical de Black Opium. Una sobredosis de cuatro vainillas distintas combinada con el acorde electrizante de café negro.",
-    notes: {
-      salida: "Pera jugosa, Mandarina verde y Canela",
-      corazon: "Flor de azahar de naranjo y Jazmín sambac",
-      fondo: "Cuarteto de vainillas, Pachulí y Café negro"
-    },
-    featured: true,
-    inStock: true
-  },
-  {
-    id: "tobacco-vanille",
-    name: "Tobacco Vanille Private Blend",
-    brand: "Tom Ford",
-    gender: "Unisex",
-    family: "Oriental Especiado",
-    price: 380000,
-    volume: "50 ml",
-    rating: 4.9,
-    reviewsCount: 92,
-    image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=800&q=80",
-    description: "Opulento, cálido e icónico. Inspirado en un club de caballeros inglés, enriquecido con haba tonka, vainilla, cacao y frutos secos.",
-    notes: {
-      salida: "Hojas de tabaco y Notas especiadas",
-      corazon: "Vainilla, Cacao, Haba tonka y Flor de tabaco",
-      fondo: "Frutos secos y Notas amaderadas nobles"
+      salida: "Cardamomo negro, Bergamota y Notas metálicas",
+      corazon: "Incienso, Madera de guaiac y Cuero curtido",
+      fondo: "Ámbar negro, Benjuí, Vainilla bourbon y Musgo"
     },
     featured: false,
-    inStock: true
+    inStock: true,
+    stock: 6
   },
   {
-    id: "santall-33",
-    name: "Santal 33",
-    brand: "Le Labo",
-    gender: "Unisex",
-    family: "Amaderado Aromático",
-    price: 360000,
+    id: "hawas-malibu",
+    name: "Hawas Malibu for Him",
+    brand: "Rasasi",
+    gender: "Hombre",
+    family: "Cítrico Marino Aromático",
+    price: 65000,
+    volume: "100 ml",
+    rating: 4.8,
+    reviewsCount: 64,
+    image: "/images/perfumes/hawas-malibu.jpg",
+    description: "Inspirado en la brisa oceánica y el sol radiante de Malibú. Notas acuáticas cristalinas, cítricos efervescentes y una base almizclada de gran permanencia.",
+    notes: {
+      salida: "Pomelo rosado, Manzana crujiente y Brisa marina",
+      corazon: "Lavanda silvestre, Romero y Cardamomo",
+      fondo: "Driftwood marino, Pachulí y Almizcle blanco"
+    },
+    featured: true,
+    inStock: true,
+    stock: 9
+  },
+  {
+    id: "rome-paradox",
+    name: "Rome Paradox Eau de Parfum",
+    brand: "MP (Mian Perfume)",
+    gender: "Mujer",
+    family: "Floral Ámbar",
+    price: 65000,
+    volume: "100 ml",
+    rating: 4.9,
+    reviewsCount: 53,
+    image: "/images/perfumes/rome-paradox.jpg",
+    description: "Frasco texturado en rosa pastel. Una sinfonía floral blanca envolvente que contrasta la frescura del azahar con la calidez del ámbar y la dulzura de la vainilla.",
+    notes: {
+      salida: "Pera Williams, Mandarina verde y Bergamota de Calabria",
+      corazon: "Neroli de Túnez, Flor de azahar y Jazmín Sambac",
+      fondo: "Ámbar biosintético, Almizcle blanco y Vainilla de Madagascar"
+    },
+    featured: false,
+    inStock: true,
+    stock: 7
+  },
+  {
+    id: "rome-ivory",
+    name: "Rome Ivory Eau de Parfum",
+    brand: "MP (Mian Perfume)",
+    gender: "Mujer",
+    family: "Floral Amaderado",
+    price: 65000,
     volume: "100 ml",
     rating: 4.7,
-    reviewsCount: 104,
-    image: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?auto=format&fit=crop&w=800&q=80",
-    description: "Una leyenda olfativa. La sensualidad embriagadora del sándalo combinada con notas de cardamomo, iris, violeta y cuero.",
+    reviewsCount: 38,
+    image: "/images/perfumes/rome-ivory.jpg",
+    description: "Elegancia en frasco blanco marfil. Una estela limpia, distinguida y etérea, con acordes de maderas blancas y un delicado bouquet floral primaveral.",
     notes: {
-      salida: "Cardamomo, Iris y Violeta",
-      corazon: "Papiro de Egipto y Ambroxan",
-      fondo: "Madera de cedro, Cuero y Sándalo australiano"
+      salida: "Aldehídos finos, Hoja de violeta y Bergamota luminosa",
+      corazon: "Iris florentino, Lirio de los valles y Rosa turca",
+      fondo: "Sándalo cremoso, Madera de cedro y Almizcle sedoso"
     },
     featured: false,
-    inStock: true
+    inStock: true,
+    stock: 6
+  },
+  {
+    id: "lady-million-royal",
+    name: "Lady Million Royal (Tester)",
+    brand: "Paco Rabanne",
+    gender: "Mujer",
+    family: "Floral Frutal Amaderado",
+    price: 130000,
+    volume: "80 ml",
+    rating: 4.9,
+    reviewsCount: 98,
+    image: "/images/perfumes/lady-million-royal.jpg",
+    description: "Icónico frasco diamante en cristal rubí y corona dorada. Formato tester original con concentración Eau de Parfum. Manifiesto de feminidad empoderada y magnética.",
+    notes: {
+      salida: "Granada crujiente, Mandarina y Frutos rojos",
+      corazon: "Flor de naranjo, Jazmín imperial y Tuberosa",
+      fondo: "Pachulí noble, Cashmeran amaderado y Almizcle sensual"
+    },
+    featured: true,
+    inStock: true,
+    stock: 4
+  },
+  {
+    id: "shakira-amarillo",
+    name: "S by Shakira Eau Florale",
+    brand: "Shakira",
+    gender: "Mujer",
+    family: "Floral Gourmand",
+    price: 40000,
+    volume: "80 ml",
+    rating: 4.6,
+    reviewsCount: 81,
+    image: "/images/perfumes/shakira-amarillo.jpg",
+    description: "Frasco facetado con tapón radiante dorado. Una fragancia chispeante y alegre que combina flores exóticas con una dulzura gourmand adictiva.",
+    notes: {
+      salida: "Grosellas negras, Bergamota y Melocotón",
+      corazon: "Jazmín, Heliotropo y Frutos rojos",
+      fondo: "Vainilla, Almizcle y Caramelo dulce"
+    },
+    featured: false,
+    inStock: true,
+    stock: 12
   }
 ];
 
@@ -165,9 +173,8 @@ export const CATEGORIES = [
   "Todos",
   "Hombre",
   "Mujer",
-  "Unisex",
   "Amaderado",
-  "Cítrico",
-  "Oriental",
-  "Floral"
+  "Floral",
+  "Acuático",
+  "Oriental"
 ];
