@@ -103,17 +103,18 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Fondo decorativo */}
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+    <div className="min-h-screen bg-[#0F0F12] text-[#FAF8F5] flex flex-col justify-center py-14 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Fondo decorativo editorial */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Volver a la tienda */}
       <div className="absolute top-6 left-6 z-20">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-400 hover:text-[#E5D2BA] transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-[#A88B60]" />
           <span>Volver a la tienda</span>
         </Link>
       </div>
@@ -121,17 +122,17 @@ function LoginForm() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
         {/* Logo */}
         <div className="text-center space-y-2">
-          <div className="inline-flex p-2.5 rounded-full bg-amber-600/20 border border-amber-600/30 text-amber-500 mb-2">
+          <div className="inline-flex p-3 rounded-full bg-white/5 border border-white/10 text-[#C5A880] mb-2 shadow-xs">
             {mode === "forgot" ? (
-              <KeyRound className="w-6 h-6" />
+              <KeyRound className="w-5 h-5 text-[#C5A880]" />
             ) : (
-              <Sparkles className="w-6 h-6" />
+              <Sparkles className="w-5 h-5 text-[#C5A880]" />
             )}
           </div>
-          <h2 className="font-serif text-3xl font-bold tracking-tight text-white">
+          <h2 className="font-serif text-3xl font-bold tracking-[0.25em] text-[#FAF8F5]">
             AURA
           </h2>
-          <p className="text-xs uppercase tracking-widest text-neutral-400">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[#9E978F] font-sans">
             {mode === "register"
               ? "Crear una nueva cuenta"
               : mode === "forgot"
@@ -140,10 +141,10 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="mt-8 bg-neutral-900/90 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6">
+        <div className="mt-8 bg-[#18181C]/95 border border-[#2A2926] rounded-3xl p-6 sm:p-9 shadow-2xl backdrop-blur-md space-y-6">
           {/* Mensajes de error o éxito */}
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+            <div role="alert" className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -160,7 +161,7 @@ function LoginForm() {
             {/* Campo Nombre en Registro */}
             {mode === "register" && (
               <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                <label className="block text-xs font-medium text-stone-300 mb-1.5">
                   Nombre Completo
                 </label>
                 <input
@@ -169,14 +170,14 @@ function LoginForm() {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="ej: Santiago López"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#101012] border border-[#2A2926] text-sm text-[#FAF8F5] placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[#C5A880] focus:border-[#C5A880]"
                 />
               </div>
             )}
 
             {/* Campo Correo Electrónico */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+              <label className="block text-xs font-medium text-stone-300 mb-1.5">
                 Correo Electrónico
               </label>
               <input
@@ -185,15 +186,15 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#101012] border border-[#2A2926] text-sm text-[#FAF8F5] placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[#C5A880] focus:border-[#C5A880]"
               />
             </div>
 
             {/* Campo Contraseña (solo para login o registro) */}
             {mode !== "forgot" && (
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-neutral-300">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-stone-300">
                     Contraseña
                   </label>
                   {mode === "login" && (
@@ -204,7 +205,7 @@ function LoginForm() {
                         setErrorMsg("");
                         setSuccessMsg("");
                       }}
-                      className="text-[11px] text-amber-500 hover:text-amber-400 transition-colors font-medium cursor-pointer"
+                      className="text-[11px] text-[#C5A880] hover:text-[#E5D2BA] transition-colors font-medium cursor-pointer"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -216,7 +217,7 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#101012] border border-[#2A2926] text-sm text-[#FAF8F5] placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[#C5A880] focus:border-[#C5A880]"
                 />
               </div>
             )}
@@ -225,7 +226,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white rounded-xl font-semibold text-xs uppercase tracking-wider transition-all duration-200 shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 bg-[#C5A880] hover:bg-[#A88B60] disabled:bg-stone-800 text-stone-950 font-medium text-xs uppercase tracking-[0.2em] rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <span>Procesando...</span>
@@ -249,7 +250,7 @@ function LoginForm() {
           </form>
 
           {/* Links de navegación inferior */}
-          <div className="pt-2 border-t border-neutral-800 text-center space-y-2">
+          <div className="pt-3 border-t border-[#262523] text-center space-y-2">
             {mode === "forgot" ? (
               <button
                 type="button"
@@ -258,7 +259,7 @@ function LoginForm() {
                   setErrorMsg("");
                   setSuccessMsg("");
                 }}
-                className="text-xs text-neutral-400 hover:text-amber-400 transition-colors font-medium cursor-pointer"
+                className="text-xs text-stone-400 hover:text-[#E5D2BA] transition-colors font-medium cursor-pointer"
               >
                 ← Volver a Iniciar Sesión
               </button>
@@ -270,7 +271,7 @@ function LoginForm() {
                   setErrorMsg("");
                   setSuccessMsg("");
                 }}
-                className="text-xs text-neutral-400 hover:text-amber-400 transition-colors font-medium cursor-pointer"
+                className="text-xs text-stone-400 hover:text-[#E5D2BA] transition-colors font-medium cursor-pointer"
               >
                 {mode === "login"
                   ? "¿No tenés cuenta? Registrate como cliente"
@@ -286,7 +287,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0F0F12]" />}>
       <LoginForm />
     </Suspense>
   );

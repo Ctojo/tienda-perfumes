@@ -17,88 +17,88 @@ export default function ProductCard({ perfume }) {
   };
 
   const genderBadgeColor = {
-    Hombre: "bg-blue-50 text-blue-700 border-blue-200",
-    Mujer: "bg-rose-50 text-rose-700 border-rose-200",
-    Unisex: "bg-amber-50 text-amber-800 border-amber-200"
-  }[perfume.gender] || "bg-neutral-100 text-neutral-800 border-neutral-200";
+    Hombre: "bg-[#F3EFEA] text-stone-700 border-[#DFD6CA]",
+    Mujer: "bg-[#FAF2ED] text-[#8C5E48] border-[#EADACF]",
+    Unisex: "bg-[#F5F2EB] text-[#8C6D40] border-[#DFD5C6]"
+  }[perfume.gender] || "bg-[#F5F2EB] text-stone-700 border-[#DFD5C6]";
 
   const isOutOfStock = perfume.stock !== undefined && perfume.stock <= 0;
 
   return (
-    <article className="group relative flex flex-col bg-white rounded-2xl border border-neutral-200/80 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <article className="group relative flex flex-col bg-white rounded-2xl border border-[#EAE5DC] overflow-hidden shadow-xs hover:shadow-xl hover:shadow-stone-200/50 transition-all duration-500 hover:-translate-y-1.5">
       {/* Imagen del perfume */}
-      <div className="relative aspect-4/5 overflow-hidden bg-neutral-100">
+      <div className="relative aspect-4/5 overflow-hidden bg-[#FAF8F5]">
         <img
           src={perfume.image}
           alt={perfume.name}
-          className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           loading="lazy"
         />
 
         {/* Badges superiores */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-          <span className={`text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full border ${genderBadgeColor}`}>
+        <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 z-10">
+          <span className={`text-[10px] font-medium tracking-[0.15em] uppercase px-3 py-1 rounded-full border ${genderBadgeColor} backdrop-blur-xs`}>
             {perfume.gender}
           </span>
           {perfume.featured && (
-            <span className="text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-neutral-900 text-white shadow-xs">
+            <span className="text-[10px] font-medium tracking-[0.18em] uppercase px-3 py-1 rounded-full bg-stone-900 text-[#E5D2BA] shadow-xs">
               Bestseller
             </span>
           )}
         </div>
 
         {/* Volumen */}
-        <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-xs text-[11px] font-medium px-2 py-0.5 rounded-md text-neutral-700 border border-neutral-200 shadow-2xs">
+        <div className="absolute bottom-3.5 right-3.5 bg-white/95 backdrop-blur-xs text-[10px] tracking-wider font-medium px-2.5 py-1 rounded-full text-stone-600 border border-[#E8E2D8] shadow-2xs font-mono">
           {perfume.volume}
         </div>
       </div>
 
       {/* Detalles del producto */}
-      <div className="flex flex-col flex-1 p-5">
-        <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
-          <span className="font-semibold tracking-widest uppercase text-neutral-600">
+      <div className="flex flex-col flex-1 p-6">
+        <div className="flex items-center justify-between text-xs mb-1.5">
+          <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-[#A88B60]">
             {perfume.brand}
           </span>
-          <div className="flex items-center gap-1 text-amber-600 font-medium">
-            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+          <div className="flex items-center gap-1 text-[#A88B60] font-medium text-xs">
+            <Star className="w-3.5 h-3.5 fill-[#C5A880] text-[#C5A880]" />
             <span>{perfume.rating ? Number(perfume.rating).toFixed(1) : "5.0"}</span>
           </div>
         </div>
 
-        <h3 className="font-serif text-lg font-bold text-neutral-900 line-clamp-1 group-hover:text-amber-700 transition-colors">
+        <h3 className="font-serif text-xl font-normal text-stone-900 line-clamp-1 group-hover:text-[#A88B60] transition-colors leading-snug">
           {perfume.name}
         </h3>
 
-        <p className="text-xs text-neutral-500 mt-1 mb-2 line-clamp-1">
+        <p className="text-xs text-stone-400 mt-0.5 mb-2 line-clamp-1 italic font-serif">
           {perfume.family}
         </p>
 
-        <p className="text-xs text-neutral-600 line-clamp-2 mb-4 leading-relaxed">
+        <p className="text-xs text-stone-500 line-clamp-2 mb-5 leading-relaxed font-light">
           {perfume.description}
         </p>
 
         {/* Precios y botón de compra */}
-        <div className="mt-auto pt-3 border-t border-neutral-100 flex items-center justify-between">
+        <div className="mt-auto pt-4 border-t border-[#F2ECE4] flex items-center justify-between">
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[10px] uppercase tracking-wider text-neutral-400">
+              <span className="text-[9px] uppercase tracking-[0.2em] text-stone-400 font-medium">
                 Precio
               </span>
               {perfume.stock !== undefined && (
                 <span
-                  className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
+                  className={`text-[9px] font-medium px-2 py-0.5 rounded-full ${
                     isOutOfStock
-                      ? "bg-rose-100 text-rose-700"
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
                       : perfume.stock <= 5
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-emerald-50 text-emerald-700"
+                      ? "bg-[#FFF9F2] text-[#8C6D40] border border-[#F0DFCD]"
+                      : "bg-[#F3FAF5] text-emerald-800 border border-emerald-200/60"
                   }`}
                 >
                   {isOutOfStock ? "Agotado" : `Stock: ${perfume.stock}`}
                 </span>
               )}
             </div>
-            <span className="text-lg font-extrabold text-neutral-900 font-sans">
+            <span className="text-xl font-bold text-stone-900 font-sans tracking-tight">
               {formatPrice(perfume.price)}
             </span>
           </div>
@@ -106,12 +106,12 @@ export default function ProductCard({ perfume }) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all duration-200 active:scale-95 shadow-xs cursor-pointer ${
+            className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full font-medium text-xs tracking-wider uppercase transition-all duration-300 active:scale-95 shadow-xs cursor-pointer ${
               isOutOfStock
-                ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                ? "bg-stone-200 text-stone-400 cursor-not-allowed"
                 : added
-                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-neutral-900 text-white hover:bg-amber-600 hover:shadow-md"
+                ? "bg-emerald-700 text-white"
+                : "bg-stone-900 text-[#FAF8F5] hover:bg-[#A88B60] hover:shadow-md"
             }`}
             aria-label={`Añadir ${perfume.name} a la bolsa`}
           >
@@ -119,12 +119,12 @@ export default function ProductCard({ perfume }) {
               <span>Sin stock</span>
             ) : added ? (
               <>
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
                 <span>Agregado</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-3.5 h-3.5 text-[#E5D2BA]" />
                 <span>Comprar</span>
               </>
             )}
