@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className="h-full antialiased scroll-smooth">
+    <html lang="es" className="h-full antialiased scroll-smooth" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col bg-[#FAF8F5] text-stone-900 font-sans selection:bg-[#C5A880] selection:text-white">
         <CartProvider>
           <div className="flex-1 flex flex-col">{children}</div>
