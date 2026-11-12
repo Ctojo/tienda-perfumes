@@ -88,14 +88,17 @@ function LoginForm() {
         }
       }
     } catch (err) {
+      const msg = err.message || "";
       setErrorMsg(
-        err.message.includes("Invalid login")
+        msg.includes("Invalid login")
           ? "Correo o contraseña incorrectos."
-          : err.message.includes("User already registered")
+          : msg.includes("User already registered")
           ? "Este correo ya está registrado. Probá iniciar sesión."
-          : err.message.includes("rate limit")
+          : msg.includes("rate limit")
           ? "Demasiados intentos. Por favor esperá unos minutos e intentá nuevamente."
-          : err.message
+          : msg.toLowerCase().includes("failed to fetch") || msg.toLowerCase().includes("fetch failed")
+          ? "No se pudo conectar con el servidor de autenticación (Supabase). Si el proyecto gratuito está en pausa, reactivalo con 'Restore' desde el panel de supabase.com."
+          : msg
       );
     } finally {
       setLoading(false);
