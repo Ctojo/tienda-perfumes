@@ -141,7 +141,7 @@ export const createPedidoSchema = z.object({
     .min(1, "Debes incluir al menos un producto en el pedido"),
   customer: customerSchema,
   paymentMethod: z
-    .enum(["mercadopago", "tarjeta", "transferencia", "efectivo"])
+    .enum(["mercadopago", "tarjeta", "transferencia", "efectivo", "credit-card", "transfer"])
     .optional()
     .default("mercadopago"),
   orderId: z.string().optional()
