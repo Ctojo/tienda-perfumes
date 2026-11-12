@@ -9,6 +9,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Módulo 13 (Clase 12): Flujo de Compra y Carrito AURA", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
     // Esperar a que los productos estén listos antes de interactuar
     await expect(
       page.getByRole("button", { name: /a la bolsa|Comprar/i }).first()

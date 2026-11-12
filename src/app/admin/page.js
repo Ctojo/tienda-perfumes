@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { formatPrice } from "@/utils/format";
+import { PERFUMES as CATALOG_PERFUMES } from "@/data/perfumes";
 import {
   Shield,
   Package,
@@ -29,7 +30,7 @@ export default function AdminPage() {
 
   const [activeTab, setActiveTab] = useState("pedidos");
   const [pedidos, setPedidos] = useState([]);
-  const [perfumes, setPerfumes] = useState([]);
+  const [perfumes, setPerfumes] = useState(CATALOG_PERFUMES);
   const [updatingStock, setUpdatingStock] = useState({});
 
   // Cargar datos y verificar sesión de admin
@@ -77,7 +78,13 @@ export default function AdminPage() {
         .select("*")
         .order("name", { ascending: true });
 
-      setPerfumes(perfumesData || []);
+      const hasCurrent = perfumesData && perfumesData.some((p) => CATALOG_PERFUMES.some((cp) => cp.id === p.id));
+      if (hasCurrent) {
+        setPerfumes(perfumesData);
+      } else {
+        const stockMap = (perfumesData || []).reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
+        setPerfumes(CATALOG_PERFUMES.map(cp => ({ ...cp, stock: typeof stockMap[cp.id] === "number" ? stockMap[cp.id] : (cp.stock ?? 8) })));
+      }
     } catch (err) {
       console.error("Error al cargar datos de admin:", err);
     } finally {

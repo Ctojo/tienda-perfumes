@@ -8,8 +8,8 @@ import { PERFUMES as FALLBACK_PERFUMES, CATEGORIES } from "@/data/perfumes";
 import { Sparkles, SlidersHorizontal, ArrowDown, Search, Database } from "lucide-react";
 
 export default function Home() {
-  const [perfumes, setPerfumes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [perfumes, setPerfumes] = useState(FALLBACK_PERFUMES);
+  const [loading, setLoading] = useState(false);
   const [usingSupabase, setUsingSupabase] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -25,16 +25,14 @@ export default function Home() {
           .select("*")
           .order("created_at", { ascending: true });
 
-        if (error) {
-          console.warn("Aviso al consultar Supabase, usando fallback local:", error.message);
+        const hasCurrent = data && data.some((p) => FALLBACK_PERFUMES.some((fp) => fp.id === p.id));
+        if (error || !hasCurrent) {
+          if (error) console.warn("Aviso al consultar Supabase, usando fallback local:", error.message);
           setPerfumes(FALLBACK_PERFUMES);
-          setUsingSupabase(false);
-        } else if (data && data.length > 0) {
+          setUsingSupabase(!error);
+        } else {
           setPerfumes(data);
           setUsingSupabase(true);
-        } else {
-          setPerfumes(FALLBACK_PERFUMES);
-          setUsingSupabase(false);
         }
       } catch (err) {
         console.error("Error conectando a Supabase:", err);
