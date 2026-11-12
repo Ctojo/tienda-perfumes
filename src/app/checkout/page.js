@@ -85,9 +85,9 @@ export default function CheckoutPage() {
 
         const mpData = await mpResponse.json();
 
-        const redirectUrl = mpData.sandbox_init_point || mpData.init_point;
+        const redirectUrl = mpData.init_point || mpData.sandbox_init_point;
         if (redirectUrl) {
-          // Redirección oficial al Checkout de Mercado Pago (prioriza sandbox_init_point para pruebas)
+          // Redirección oficial al Checkout de Mercado Pago
           window.location.href = redirectUrl;
           return;
         } else {

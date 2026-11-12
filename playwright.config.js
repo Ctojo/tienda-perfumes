@@ -24,7 +24,7 @@ export default defineConfig({
   reporter: [["html", { outputFolder: "playwright-report", open: "never" }], ["list"]],
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:3000",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure"
@@ -39,8 +39,8 @@ export default defineConfig({
 
   // Levanta automáticamente el servidor de Next.js si no está corriendo (producción optimizada)
   webServer: {
-    command: "npm run start",
-    url: "http://localhost:3000",
+    command: "npx next start -p 3000 -H 0.0.0.0",
+    url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000
   }
