@@ -46,15 +46,6 @@ Para evaluar el flujo de compra y la pasarela de pagos integrada con la API ofic
 > **Requisito para probar Mercado Pago:**  
 > Por motivos de seguridad de Mercado Pago, una cuenta vendedora no puede comprarse a sí misma.  
 > **Abrir la web en una Ventana de Incógnito** (`Ctrl + Shift + N` en Google Chrome) antes de probar el pago para que el navegador no tome una cuenta personal de Mercado Pago que tengas abierta.
-
-### Credenciales del Comprador de Prueba (Buyer Test User)
-Al hacer clic en **"Confirmar y Pagar"** con Mercado Pago, iniciar sesión con las siguientes credenciales autorizadas:
-
-- **Usuario / Email:** `TESTUSER1739782646017515777`
-- **Contraseña:** `7wAxSJHn10`
-- **Código de Verificación:** `647840`
-- **ID de Usuario Buyer:** `3768647840`
-
 > [!TIP]
 > **Simulación Directa Alternativa (Sin Login):**  
 > En el paso 3 del Checkout también se encuentra disponible la opción **"Tarjeta de Crédito / Débito directa"**. Al seleccionarla y presionar "Confirmar y Pagar", el sistema simula inmediatamente la acreditación bancaria: registra el pedido con ID único, descuenta el stock del inventario, vacía la bolsa y despliega el comprobante fiscal terminado sin necesidad de ingresar a Mercado Pago.
