@@ -91,11 +91,11 @@ export default function CheckoutPage() {
           window.location.href = redirectUrl;
           return;
         } else {
-          console.warn("Aviso Mercado Pago:", mpData.error);
+          throw new Error(mpData.error || "No se pudo generar el enlace de pago en Mercado Pago");
         }
       }
 
-      // Para otros métodos o confirmación inmediata
+      // Para métodos de pago directo (tarjeta / transferencia inmediata)
       setOrderCompleted(data);
       clearCart();
     } catch (err) {

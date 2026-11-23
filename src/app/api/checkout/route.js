@@ -56,7 +56,11 @@ export async function POST(request) {
     // Generar identificador único de orden de compra
     const orderId = `AURA-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // 4. Guardar pedido y descontar stock en Supabase
+    // Determinar si es pago externo (Mercado Pago) o pago directo inmediato
+    const isMercadoPago = (paymentMethod || "").toLowerCase() === "mercadopago";
+    const initialStatus = isMercadoPago ? "pending" : "approved";
+
+    // 4. Guardar pedido en Supabase (con estado 'pending' si es MP, o 'approved' si es directo)
     try {
       const supabase = await createClient();
 
@@ -68,7 +72,7 @@ export async function POST(request) {
         client_address: `${sanitizedCustomer.address}, ${sanitizedCustomer.city}`,
         total: total,
         payment_method: paymentMethod || "mercadopago",
-        status: "approved",
+        status: initialStatus,
         items: items.map((i) => ({
           id: i.id,
           name: sanitizeString(i.name),
@@ -80,8 +84,9 @@ export async function POST(request) {
 
       if (insertError) {
         console.warn("Aviso al registrar pedido en Supabase:", insertError.message);
-      } else {
-        // Descontar stock
+      } else if (initialStatus === "approved") {
+        // Descontar stock ÚNICAMENTE si el pago fue aprobado de inmediato (pago directo simulado / tarjeta).
+        // En Mercado Pago, el stock se descuenta en la conciliación del webhook cuando el pago sea 'approved'.
         for (const item of items) {
           const { data: prod } = await supabase
             .from("perfumes")
@@ -106,8 +111,8 @@ export async function POST(request) {
     const paymentResponse = {
       success: true,
       orderId,
-      status: "approved",
-      statusDetail: "accredited",
+      status: initialStatus,
+      statusDetail: isMercadoPago ? "pending_payment" : "accredited",
       dateCreated: new Date().toISOString(),
       paymentMethod: paymentMethod || "mercadopago",
       summary: {

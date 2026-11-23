@@ -1,7 +1,66 @@
 import { NextResponse } from "next/server";
-import { MercadoPagoConfig, Payment } from "mercadopago";
-import { createClient } from "@/utils/supabase/server";
+import crypto from "crypto";
+import { reconcilePayment } from "@/lib/mercadopago-conciliacion";
 
+/**
+ * Valida la firma criptográfica HMAC-SHA256 del webhook si se ha configurado MP_WEBHOOK_SECRET.
+ * Si no está configurada, la autenticidad se garantiza mediante consulta server-to-server a la API de MP.
+ */
+function verifyMercadoPagoSignature(request, paymentId) {
+  const secret = process.env.MP_WEBHOOK_SECRET || process.env.MERCADO_PAGO_WEBHOOK_SECRET;
+  if (!secret) {
+    // Sin secreto configurado, la autenticación se delega a la consulta obligatoria a la API oficial de MP
+    return { verified: true, method: "server_api_query" };
+  }
+
+  const xSignature = request.headers.get("x-signature");
+  const xRequestId = request.headers.get("x-request-id");
+
+  if (!xSignature) {
+    return { verified: false, reason: "Cabecera x-signature ausente" };
+  }
+
+  const parts = xSignature.split(",").reduce((acc, part) => {
+    const [key, val] = part.split("=");
+    if (key && val) acc[key.trim()] = val.trim();
+    return acc;
+  }, {});
+
+  const ts = parts.ts;
+  const hash = parts.v1;
+
+  if (!ts || !hash) {
+    return { verified: false, reason: "Formato de x-signature inválido" };
+  }
+
+  const manifest = `id:${paymentId};request-id:${xRequestId || ""};ts:${ts};`;
+  const computedHash = crypto
+    .createHmac("sha256", secret)
+    .update(manifest)
+    .digest("hex");
+
+  if (computedHash !== hash) {
+    return { verified: false, reason: "Firma criptográfica HMAC no coincide" };
+  }
+
+  return { verified: true, method: "hmac_sha256" };
+}
+
+/**
+ * Webhook oficial de Mercado Pago para Notificaciones de Pagos (IPN / Webhooks v2).
+ *
+ * Principios de conciliación segura:
+ * 1. Filtro estricto de eventos: Ignora notificaciones ajenas a pagos.
+ * 2. Validación de autenticidad criptográfica (HMAC-SHA256) cuando esté configurada.
+ * 3. Consulta al servidor de Mercado Pago (Cero confianza en el payload recibido).
+ * 4. Actualización de estado en Supabase y descuento de stock SOLO ante estado 'approved'.
+ * 5. Idempotencia: Múltiples entregas del mismo evento no duplican el descuento de stock.
+ * 6. Manejo de errores:
+ *    - 200 OK para eventos exitosos o eventos ignorados intencionalmente.
+ *    - 400 Bad Request para peticiones sin ID de pago.
+ *    - 401 Unauthorized si la firma criptográfica es inválida.
+ *    - 500 Internal Server Error para fallos recuperables (DB o red), forzando reintento de MP.
+ */
 export async function POST(request) {
   try {
     const url = new URL(request.url);
@@ -14,58 +73,61 @@ export async function POST(request) {
       url.searchParams.get("data.id") ||
       url.searchParams.get("id");
 
-    const topic = body?.type || body?.topic || url.searchParams.get("topic");
+    const topic = body?.type || body?.topic || url.searchParams.get("topic") || url.searchParams.get("type");
 
-    // Si no es un evento de pago o no hay ID, respondemos 200 para evitar reintentos innecesarios
-    if (!paymentId || (topic && topic !== "payment")) {
-      return NextResponse.json({ status: "ignored" }, { status: 200 });
+    // 1. Ignorar eventos que no sean de tipo pago
+    if (topic && topic !== "payment") {
+      return NextResponse.json(
+        { status: "ignored", reason: `Tipo de evento no relevante: ${topic}` },
+        { status: 200 }
+      );
     }
 
-    const token =
-      process.env.MP_ACCESS_TOKEN || process.env.MERCADO_PAGO_ACCESS_TOKEN;
-
-    if (!token) {
-      console.error("Webhook: Token de Mercado Pago no configurado");
-      return NextResponse.json({ error: "Missing MP Token" }, { status: 500 });
+    // 2. Si no hay ID de pago en la petición, rechazar con 400
+    if (!paymentId) {
+      return NextResponse.json(
+        { error: "Identificador de pago ausente en la notificación" },
+        { status: 400 }
+      );
     }
 
-    // Consultar la API oficial de Mercado Pago para obtener el estado verídico (Slide 12 y 13)
-    const client = new MercadoPagoConfig({ accessToken: token });
-    const paymentClient = new Payment(client);
-    const payment = await paymentClient.get({ id: String(paymentId) });
-
-    if (payment) {
-      const orderId = payment.external_reference;
-      const status = payment.status; // 'approved', 'rejected', 'pending', etc.
-      const paymentType = payment.payment_type_id || "mercadopago";
-
-      // Conciliación en Base de Datos Supabase (Slide 15)
-      if (orderId) {
-        const supabase = await createClient();
-
-        await supabase
-          .from("pedidos")
-          .update({
-            status: status === "approved" ? "approved" : status,
-            payment_method: `Mercado Pago (${paymentType})`
-          })
-          .eq("order_id", orderId);
-
-        console.log(`Webhook MP: Pedido ${orderId} conciliado a estado ${status}`);
-      }
+    // 3. Validación de autenticidad criptográfica cuando corresponda
+    const sigCheck = verifyMercadoPagoSignature(request, paymentId);
+    if (!sigCheck.verified) {
+      console.warn(`[Webhook Mercado Pago] Notificación rechazada por firma inválida: ${sigCheck.reason}`);
+      return NextResponse.json(
+        { error: "Autenticación de notificación fallida", reason: sigCheck.reason },
+        { status: 401 }
+      );
     }
 
-    // Responder HTTP 200 de inmediato (Requisito obligatorio de Slide 12)
-    return NextResponse.json({ status: "success" }, { status: 200 });
+    // 4. Ejecutar la conciliación segura en el servidor
+    const result = await reconcilePayment({ paymentId });
+
+    console.log(`[Webhook Mercado Pago] Pago ${paymentId} procesado con éxito:`, result);
+
+    return NextResponse.json(
+      { status: "success", result },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error procesando Webhook de Mercado Pago:", error);
-    // Respondemos 200 para evitar que Mercado Pago reintente en bucle ante errores no críticos
-    return NextResponse.json({ error: error.message }, { status: 200 });
+    console.error("[Webhook Mercado Pago] Error crítico procesando webhook:", error);
+
+    // Ante errores de base de datos o fallo de API externa, responder 500 para que Mercado Pago reintente
+    return NextResponse.json(
+      {
+        error: "Error interno al conciliar el pago en el webhook",
+        message: error.message
+      },
+      { status: 500 }
+    );
   }
 }
 
-// Soporte para verificación GET / IPN
+// Soporte para verificación GET / Health Check
 export async function GET() {
-  return NextResponse.json({ status: "Webhook endpoint activo" }, { status: 200 });
+  return NextResponse.json(
+    { status: "Webhook de Mercado Pago activo y escuchando eventos" },
+    { status: 200 }
+  );
 }
-

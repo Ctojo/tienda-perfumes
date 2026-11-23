@@ -106,7 +106,11 @@ export async function POST(request) {
 
     const supabase = await createClient();
 
-    // 4. Inserción del pedido en Supabase
+    // Determinar si es pago externo (Mercado Pago) o pago directo inmediato
+    const isMercadoPago = (paymentMethod || "").toLowerCase() === "mercadopago";
+    const initialStatus = isMercadoPago ? "pending" : "approved";
+
+    // 4. Inserción del pedido en Supabase (pending si es MP, approved si es directo)
     const { data: newOrder, error: insertError } = await supabase
       .from("pedidos")
       .insert({
@@ -117,7 +121,7 @@ export async function POST(request) {
         client_address: `${sanitizedCustomer.address}, ${sanitizedCustomer.city}`,
         total,
         payment_method: paymentMethod || "mercadopago",
-        status: "approved",
+        status: initialStatus,
         items: items.map((i) => ({
           id: i.id,
           name: sanitizeString(i.name),
@@ -131,8 +135,8 @@ export async function POST(request) {
 
     if (insertError) {
       console.warn("Aviso al registrar pedido en Supabase:", insertError.message);
-    } else {
-      // 5. Descontar stock atómicamente en la tabla "perfumes"
+    } else if (initialStatus === "approved") {
+      // 5. Descontar stock únicamente si el pago fue aprobado de inmediato
       for (const item of items) {
         try {
           const { data: prod } = await supabase
@@ -156,7 +160,7 @@ export async function POST(request) {
 
     const responsePayload = {
       orderId,
-      status: "approved",
+      status: initialStatus,
       dateCreated: new Date().toISOString(),
       paymentMethod: paymentMethod || "mercadopago",
       summary: {

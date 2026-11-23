@@ -34,31 +34,32 @@ function ResultadoPagoContent() {
   const [dbUpdated, setDbUpdated] = useState(false);
 
   useEffect(() => {
-    // Si el pago fue aprobado, vaciamos el carrito y actualizamos el pedido en Supabase
+    // Si el pago fue aprobado, vaciamos el carrito y solicitamos la conciliación al servidor
     if (status === "approved" || status === "success") {
       clearCart();
 
-      async function syncWithSupabase() {
+      async function syncWithServer() {
         try {
-          const supabase = createClient();
-          if (orderId && orderId !== "AURA-PEDIDO") {
-            await supabase
-              .from("pedidos")
-              .update({
-                status: "approved",
-                payment_method: `Mercado Pago (${paymentType})`
+          if (paymentId && paymentId !== "N/A") {
+            // El servidor verifica el pago con Mercado Pago y actualiza la orden y stock en Supabase
+            await fetch("/api/mercadopago/verificar-pago", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                paymentId,
+                orderId: orderId !== "AURA-PEDIDO" ? orderId : undefined
               })
-              .eq("order_id", orderId);
+            });
           }
           setDbUpdated(true);
         } catch (e) {
-          console.error("Error al actualizar pedido en Supabase:", e);
+          console.error("Error al sincronizar pago con el servidor:", e);
         }
       }
 
-      syncWithSupabase();
+      syncWithServer();
     }
-  }, [status, orderId, paymentType]);
+  }, [status, orderId, paymentId]);
 
   const isApproved = status === "approved" || status === "success";
   const isPending = status === "pending" || status === "in_process";
